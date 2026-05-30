@@ -30,10 +30,14 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center bg-[var(--bg-primary)] p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-2xl bg-accent flex items-center justify-center mx-auto mb-4 shadow-lg shadow-accent/20">
-            <Shield className="w-8 h-8 text-white" />
+          <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-accent/20">
+            <img
+              src="/logo.png"
+              alt="Uganda Coat of Arms"
+              className="w-12 h-12 object-contain"
+            />
           </div>
-          <h1 className="text-2xl font-bold text-[var(--text-primary)]">GovBridge Uganda</h1>
+          <h1 className="text-2xl font-bold text-[var(--text-primary)]">Bridge Uganda</h1>
           <p className="text-sm text-[var(--text-muted)] mt-1">National Interoperability Platform</p>
         </div>
 
