@@ -3,3 +3,5 @@ dist
 .vscode
 env
 db.sqlite3
+.env
+.env.production
