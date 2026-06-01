@@ -8,8 +8,7 @@ export const useWebSocket = (executionId) => {
   useEffect(() => {
     if (!executionId) return;
     const token = localStorage.getItem('access_token');
-    const wsUrl = `ws://127.0.0.1:8000/ws/executions/${executionId}/?Bearer=${token}`;
-
+    const wsUrl = `${import.meta.env.VITE_WS_URL}/executions/${executionId}/?Bearer=${token}`;
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
 
