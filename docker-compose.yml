@@ -1,0 +1,57 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: bridge-db
+    environment:
+      POSTGRES_DB: bridge
+      POSTGRES_USER: bridge
+      POSTGRES_PASSWORD: BridgeDB2026!
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bridge"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: bridge-redis
+    ports:
+      - "6379:6379"
+
+  backend:
+    image: python:3.12-slim
+    container_name: bridge-backend
+    working_dir: /app
+    env_file:
+      - .env
+    environment:
+      - DJANGO_SETTINGS_MODULE=server.settings
+    volumes:
+      - ./backend:/app
+      - bridge_media:/app/media
+      - bridge_logs:/app/logs
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    command: >
+      sh -c "apt-get update && 
+             apt-get install -y gcc libpq-dev && 
+             rm -rf /var/lib/apt/lists/* &&
+             pip install -r requirements.txt &&
+             mkdir -p /app/logs &&
+             python manage.py migrate &&
+             python manage.py collectstatic --noinput &&
+             daphne -b 0.0.0.0 -p 8000 server.asgi:application"
+
+volumes:
+  postgres_data:
+  bridge_media:
+  bridge_logs:

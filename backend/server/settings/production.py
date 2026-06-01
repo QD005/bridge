@@ -42,9 +42,14 @@ if not cors:
     raise ValueError("CORS_ALLOWED_ORIGINS must be set in production!")
 CORS_ALLOWED_ORIGINS = cors.split(',')
 
+# CSRF for admin login
+csrf_origins = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
+if csrf_origins:
+    CSRF_TRUSTED_ORIGINS = csrf_origins.split(',')
+
 SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'True') == 'True'
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+#SESSION_COOKIE_SECURE = True
+#CSRF_COOKIE_SECURE = True
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
