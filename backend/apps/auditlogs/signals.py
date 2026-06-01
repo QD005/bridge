@@ -7,6 +7,7 @@ from apps.workflows.models import Workflow, WorkflowStep
 from apps.executions.models import WorkflowExecution, ExecutionStep, StepSubmission
 from apps.collaboration.models import Message, Conversation
 from .utils import log_action
+import json
 
 User = get_user_model()
 
