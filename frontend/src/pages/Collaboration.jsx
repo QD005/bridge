@@ -45,6 +45,7 @@ const Collaboration = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [showParticipants, setShowParticipants] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
   const typingTimer = useRef(null);
@@ -85,10 +86,10 @@ const Collaboration = () => {
   useEffect(() => {
     if (activeConv) {
       fetchMessages(activeConv.id);
-      // Clear unread count locally when opening conversation
       setConversations(prev => prev.map(c => 
         c.id === activeConv.id ? { ...c, unread_count: 0 } : c
       ));
+      setMobileSidebarOpen(false);
     }
   }, [activeConv?.id]);
 
@@ -128,7 +129,6 @@ const Collaboration = () => {
       if (prev.find(m => m.id === msg.id)) return prev;
       return [...prev, msg];
     });
-    // If this message is for the active conversation, update last_message
     setConversations(prev => prev.map(c => 
       c.id === msg.conversation ? { ...c, last_message: msg, updated_at: new Date().toISOString() } : c
     ));
@@ -151,7 +151,7 @@ const Collaboration = () => {
     handleNewMessage,
     null,
     handleTaskUpdated,
-    handlePinUpdated  // NEW
+    handlePinUpdated
   );
 
   // Typing indicator
@@ -311,7 +311,7 @@ const Collaboration = () => {
     return senderId === currentUserId || (senderEmail && senderEmail === currentUserEmail);
   };
 
-  // Pinned messages (manual pin, not auto)
+  // Pinned messages
   const pinnedMessages = useMemo(() => {
     return messages.filter(m => m.is_pinned);
   }, [messages]);
@@ -329,18 +329,39 @@ const Collaboration = () => {
   if (loading) return <Loading />;
 
   return (
-    <div className="h-[calc(100vh-5rem)] flex gap-4 animate-fade-in">
+    <div className="h-[calc(100vh-5rem)] flex flex-col lg:flex-row gap-0 lg:gap-4 animate-fade-in relative">
+      {/* Mobile overlay */}
+      {mobileSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+          onClick={() => setMobileSidebarOpen(false)}
+        />
+      )}
+
       {/* Conversations Sidebar */}
-      <div className="w-80 flex-shrink-0 glass-panel flex flex-col overflow-hidden">
+      <div className={`
+        fixed lg:static inset-y-0 left-0 z-40
+        w-72 lg:w-80 flex-shrink-0 glass-panel flex flex-col overflow-hidden
+        transition-transform duration-300 ease-in-out
+        ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+      `}>
         <div className="p-4 border-b border-[var(--border-color)]">
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-semibold text-[var(--text-primary)] flex items-center gap-2">
               <MessageSquare className="w-4 h-4" /> Messages
             </h3>
-            <button onClick={() => setShowNewModal(true)} 
-              className="p-1.5 hover:bg-accent/10 rounded-lg text-accent transition-colors">
-              <Plus className="w-4 h-4" />
-            </button>
+            <div className="flex items-center gap-2">
+              <button onClick={() => setShowNewModal(true)} 
+                className="p-1.5 hover:bg-accent/10 rounded-lg text-accent transition-colors">
+                <Plus className="w-4 h-4" />
+              </button>
+              <button 
+                onClick={() => setMobileSidebarOpen(false)}
+                className="lg:hidden p-1.5 hover:bg-[var(--bg-input)] rounded-lg text-[var(--text-muted)]"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
           </div>
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--text-muted)]" />
@@ -370,7 +391,6 @@ const Collaboration = () => {
                   : 'hover:bg-[var(--bg-input)] border border-transparent'
               }`}
             >
-              {/* Unread badge - absolute top right */}
               {(conv.unread_count > 0 || 0) > 0 && (
                 <div className="absolute top-2 right-2 min-w-[18px] h-[18px] rounded-full bg-danger text-white text-[10px] font-bold flex items-center justify-center px-1">
                   {conv.unread_count}
@@ -407,17 +427,20 @@ const Collaboration = () => {
         {activeConv ? (
           <>
             {/* Header */}
-            <div className="p-4 border-b border-[var(--border-color)] flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <button onClick={() => setActiveConv(null)} className="lg:hidden text-[var(--text-muted)]">
+            <div className="p-3 lg:p-4 border-b border-[var(--border-color)] flex items-center justify-between">
+              <div className="flex items-center gap-2 lg:gap-3 min-w-0">
+                <button 
+                  onClick={() => setMobileSidebarOpen(true)} 
+                  className="lg:hidden text-[var(--text-muted)] flex-shrink-0"
+                >
                   <ArrowLeft className="w-5 h-5" />
                 </button>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-semibold text-[var(--text-primary)]">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="font-semibold text-[var(--text-primary)] text-sm lg:text-base truncate">
                       {activeConv.title || `Conversation #${activeConv.id}`}
                     </h3>
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded border ${TYPE_COLORS[activeConv.conversation_type] || TYPE_COLORS.DIRECT}`}>
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded border ${TYPE_COLORS[activeConv.conversation_type] || TYPE_COLORS.DIRECT} flex-shrink-0`}>
                       {activeConv.conversation_type}
                     </span>
                   </div>
@@ -427,26 +450,27 @@ const Collaboration = () => {
                       {connected ? 'Connected' : 'Offline'} · {activeConv.participants?.length || 0} members
                     </span>
                     {onlineUsers.length > 0 && (
-                      <span className="text-xs text-success">
+                      <span className="text-xs text-success hidden sm:inline">
                         {onlineUsers.length} online
                       </span>
                     )}
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 lg:gap-2 flex-shrink-0">
                 <button 
                   onClick={() => setShowParticipants(!showParticipants)}
-                  className="btn-secondary text-sm py-1.5 px-3 flex items-center gap-1.5"
+                  className="btn-secondary text-xs lg:text-sm py-1.5 px-2 lg:px-3 flex items-center gap-1.5"
                 >
                   <Users className="w-3.5 h-3.5" /> 
-                  {showParticipants ? 'Hide' : 'Members'}
+                  <span className="hidden sm:inline">{showParticipants ? 'Hide' : 'Members'}</span>
                 </button>
                 <button 
                   onClick={() => setShowTaskModal(true)}
-                  className="btn-secondary text-sm py-1.5 px-3 flex items-center gap-1.5"
+                  className="btn-secondary text-xs lg:text-sm py-1.5 px-2 lg:px-3 flex items-center gap-1.5"
                 >
-                  <Briefcase className="w-3.5 h-3.5" /> Task
+                  <Briefcase className="w-3.5 h-3.5" /> 
+                  <span className="hidden sm:inline">Task</span>
                 </button>
               </div>
             </div>
@@ -462,7 +486,7 @@ const Collaboration = () => {
                       <div key={p.id} className="flex items-center gap-1.5 text-xs bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-full px-2 py-1">
                         <div className={`w-2 h-2 rounded-full ${online ? 'bg-success' : 'bg-[var(--text-muted)]'}`} />
                         <span className="text-[var(--text-primary)]">{p.first_name} {p.last_name}</span>
-                        <span className="text-[var(--text-muted)]">{p.email}</span>
+                        <span className="text-[var(--text-muted)] hidden sm:inline">{p.email}</span>
                         {online && <span className="text-success text-[10px]">online</span>}
                       </div>
                     );
@@ -471,7 +495,7 @@ const Collaboration = () => {
               </div>
             )}
 
-            {/* PINNED BANNER - WhatsApp style */}
+            {/* PINNED BANNER */}
             {pinnedMessages.length > 0 && (
               <div className="border-b-2 border-accent/20 bg-accent/5">
                 {pinnedMessages.map(pinned => (
@@ -490,7 +514,6 @@ const Collaboration = () => {
                       </div>
                       <p className="text-sm text-[var(--text-primary)] truncate">{pinned.content}</p>
                       
-                      {/* Task controls in pinned banner */}
                       {pinned.message_type === 'TASK' && (
                         <div className="flex items-center gap-3 mt-2 flex-wrap">
                           <span className="text-xs text-[var(--text-muted)]">
@@ -513,10 +536,9 @@ const Collaboration = () => {
                         </div>
                       )}
                     </div>
-                    {/* Unpin button */}
                     <button 
                       onClick={() => handleTogglePin(pinned.id)}
-                      className="p-1 hover:bg-danger/10 rounded text-[var(--text-muted)] hover:text-danger transition-colors"
+                      className="p-1 hover:bg-danger/10 rounded text-[var(--text-muted)] hover:text-danger transition-colors flex-shrink-0"
                       title="Unpin"
                     >
                       <PinOff className="w-4 h-4" />
@@ -527,7 +549,7 @@ const Collaboration = () => {
             )}
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto no-scrollbar p-4 space-y-4">
+            <div className="flex-1 overflow-y-auto no-scrollbar p-3 lg:p-4 space-y-3 lg:space-y-4">
               {messages.length === 0 && (
                 <div className="text-center py-12 text-[var(--text-muted)]">
                   <MessageSquare className="w-12 h-12 mx-auto mb-3 opacity-20" />
@@ -539,19 +561,19 @@ const Collaboration = () => {
                 const isTask = msg.message_type === 'TASK';
                 
                 return (
-                  <div key={msg.id} className={`flex gap-3 ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
+                  <div key={msg.id} className={`flex gap-2 lg:gap-3 ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
                     {/* Avatar */}
                     <div className="flex flex-col items-center gap-1 flex-shrink-0">
-                      <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center relative">
-                        <User className="w-4 h-4 text-accent" />
+                      <div className="w-7 h-7 lg:w-8 lg:h-8 rounded-full bg-accent/10 flex items-center justify-center relative">
+                        <User className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-accent" />
                         {isUserOnline(msg.sender?.id) && (
-                          <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-success border-2 border-[var(--bg-panel)]" />
+                          <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 lg:w-2.5 lg:h-2.5 rounded-full bg-success border-2 border-[var(--bg-panel)]" />
                         )}
                       </div>
                     </div>
 
                     {/* Message bubble */}
-                    <div className={`flex flex-col max-w-[75%] ${isMe ? 'items-end' : 'items-start'}`}>
+                    <div className={`flex flex-col max-w-[80%] lg:max-w-[75%] ${isMe ? 'items-end' : 'items-start'}`}>
                       {/* Name & time */}
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-xs font-medium text-[var(--text-secondary)]">
@@ -566,7 +588,7 @@ const Collaboration = () => {
                         )}
                       </div>
 
-                      <div className={`p-3 rounded-2xl group relative ${
+                      <div className={`p-2.5 lg:p-3 rounded-2xl group relative ${
                         isMe 
                           ? 'bg-accent text-white rounded-tr-sm' 
                           : 'bg-[var(--bg-input)] text-[var(--text-primary)] border border-[var(--border-color)] rounded-tl-sm'
@@ -624,8 +646,7 @@ const Collaboration = () => {
                               <span className="text-[10px] opacity-80">
                                 {msg.assigned_to ? `To: ${msg.assigned_to.first_name}` : 'Unassigned'}
                               </span>
-                              {/* Status action buttons */}
-                              <div className="flex items-center gap-1">
+                              <div className="flex items-center gap-1 flex-wrap">
                                 {Object.entries(TASK_STATUS_OPTIONS).map(([status, { label, color }]) => (
                                   <button
                                     key={status}
@@ -663,7 +684,7 @@ const Collaboration = () => {
               
               {/* Typing indicator */}
               {typingUsers.length > 0 && (
-                <div className="flex items-center gap-2 text-xs text-[var(--text-muted)] pl-11">
+                <div className="flex items-center gap-2 text-xs text-[var(--text-muted)] pl-9 lg:pl-11">
                   <div className="flex gap-1">
                     <span className="w-1.5 h-1.5 bg-[var(--text-muted)] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                     <span className="w-1.5 h-1.5 bg-[var(--text-muted)] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
@@ -677,13 +698,13 @@ const Collaboration = () => {
             </div>
 
             {/* Input Area */}
-            <div className="p-4 border-t border-[var(--border-color)]">
+            <div className="p-3 lg:p-4 border-t border-[var(--border-color)]">
               {pendingAttachments.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-3">
                   {pendingAttachments.map((att, i) => (
                     <div key={i} className="flex items-center gap-2 text-xs bg-[var(--bg-input)] border border-[var(--border-color)] rounded-lg px-2 py-1">
                       <FileText className="w-3 h-3" />
-                      <span className="truncate max-w-[150px]">{att.name}</span>
+                      <span className="truncate max-w-[100px] lg:max-w-[150px]">{att.name}</span>
                       <button onClick={() => removeAttachment(i)} className="text-danger hover:opacity-70">
                         <X className="w-3 h-3" />
                       </button>
@@ -703,12 +724,12 @@ const Collaboration = () => {
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={uploading}
-                  className="p-2.5 hover:bg-[var(--bg-input)] rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
+                  className="p-2 lg:p-2.5 hover:bg-[var(--bg-input)] rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors flex-shrink-0"
                 >
-                  <Paperclip className="w-5 h-5" />
+                  <Paperclip className="w-4 h-4 lg:w-5 lg:h-5" />
                 </button>
                 <input
-                  className="input-field flex-1"
+                  className="input-field flex-1 text-sm"
                   value={newMessage}
                   onChange={handleInputChange}
                   placeholder={uploading ? 'Uploading...' : 'Type a message...'}
@@ -717,7 +738,7 @@ const Collaboration = () => {
                 <button 
                   type="submit" 
                   disabled={uploading || (!newMessage.trim() && pendingAttachments.length === 0)}
-                  className="btn-primary px-4 disabled:opacity-50"
+                  className="btn-primary px-3 lg:px-4 disabled:opacity-50 flex-shrink-0"
                 >
                   <Send className="w-4 h-4" />
                 </button>
@@ -726,10 +747,16 @@ const Collaboration = () => {
           </>
         ) : (
           <div className="flex-1 flex items-center justify-center text-[var(--text-muted)]">
-            <div className="text-center">
-              <MessageSquare className="w-16 h-16 mx-auto mb-4 opacity-20" />
-              <p className="text-lg font-medium mb-1">Select a conversation</p>
+            <div className="text-center px-4">
+              <MessageSquare className="w-12 h-12 lg:w-16 lg:h-16 mx-auto mb-4 opacity-20" />
+              <p className="text-base lg:text-lg font-medium mb-1">Select a conversation</p>
               <p className="text-sm">Choose a conversation to start messaging with agency partners</p>
+              <button 
+                onClick={() => setMobileSidebarOpen(true)}
+                className="mt-4 btn-primary lg:hidden"
+              >
+                View Conversations
+              </button>
             </div>
           </div>
         )}
@@ -772,7 +799,7 @@ const Collaboration = () => {
                       }
                     }}
                   />
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <p className="text-sm text-[var(--text-primary)]">{u.first_name} {u.last_name}</p>
                     <p className="text-[10px] text-[var(--text-muted)]">{u.email} · {u.agency_name || u.agency?.name || 'No agency'}</p>
                   </div>

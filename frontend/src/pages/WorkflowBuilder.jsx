@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Trash2, GripVertical, Save, Play, ArrowUp, ArrowDown, Settings } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Save, ArrowUp, ArrowDown, Settings } from 'lucide-react';
 import api from '../api/axios';
 import Loading from '../components/Loading';
 import Badge from '../components/Badge';
@@ -122,34 +122,38 @@ const WorkflowBuilder = () => {
   if (!workflow) return <div className="text-[var(--text-muted)]">Workflow not found</div>;
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center gap-4">
-        <button onClick={() => navigate('/workflows')} className="text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors">
+    <div className="space-y-4 lg:space-y-6 animate-fade-in">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 lg:gap-4">
+        <button onClick={() => navigate('/workflows')} className="text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors flex-shrink-0">
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <div className="flex-1">
-          <div className="flex items-center gap-3">
-            <h1 className="page-title">{workflow.name}</h1>
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 flex-wrap">
+            <h1 className="page-title text-lg lg:text-2xl truncate">{workflow.name}</h1>
             <Badge status={workflow.status} />
           </div>
-          <p className="text-sm text-[var(--text-muted)]">{workflow.agency?.name} · {workflow.steps?.length || 0} steps</p>
+          <p className="text-xs lg:text-sm text-[var(--text-muted)]">{workflow.agency?.name} · {workflow.steps?.length || 0} steps</p>
         </div>
-        <button onClick={openAddStep} className="btn-primary flex items-center gap-2">
+        <button onClick={openAddStep} className="btn-primary flex items-center gap-2 text-sm self-start sm:self-auto">
           <Plus className="w-4 h-4" /> Add Step
         </button>
       </div>
 
+      {/* Published Warning */}
       {workflow.status === 'PUBLISHED' && (
         <div className="p-3 rounded-lg bg-warning/10 border border-warning/20 text-sm text-warning flex items-center gap-2">
-          <Settings className="w-4 h-4" />
-          This workflow is published. Changes will create a new version.
+          <Settings className="w-4 h-4 flex-shrink-0" />
+          <span>This workflow is published. Changes will create a new version.</span>
         </div>
       )}
 
+      {/* Steps List */}
       <div className="space-y-3">
         {(workflow.steps || []).sort((a, b) => a.order - b.order).map((step, idx) => (
-          <div key={step.id} className="glass-panel p-4 flex items-center gap-4">
-            <div className="flex flex-col gap-1">
+          <div key={step.id} className="glass-panel p-3 lg:p-4 flex flex-col sm:flex-row sm:items-center gap-3 lg:gap-4">
+            {/* Reorder Controls - Hidden on mobile */}
+            <div className="hidden sm:flex flex-col gap-1 flex-shrink-0">
               <button onClick={() => handleReorder(step.id, 'up')} disabled={idx === 0} className="p-1 hover:bg-[var(--bg-input)] rounded disabled:opacity-30">
                 <ArrowUp className="w-3 h-3 text-[var(--text-muted)]" />
               </button>
@@ -159,23 +163,33 @@ const WorkflowBuilder = () => {
               </button>
             </div>
 
-            <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
+            {/* Mobile: Order badge */}
+            <div className="sm:hidden w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
+              <span className="text-xs font-bold text-accent">{step.order}</span>
+            </div>
+
+            {/* Step Type Icon */}
+            <div className="hidden sm:flex w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
               <span className="text-xs font-bold text-accent">{step.step_type?.slice(0, 2)}</span>
             </div>
 
+            {/* Content */}
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <h4 className="font-medium text-[var(--text-primary)]">{step.name || step.step_type}</h4>
-                {step.is_repeatable && <Badge status="ACTIVE" text="Repeatable" />}
-                {step.requires_approval && <Badge status="WARNING" text="Approval" />}
+              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 flex-wrap">
+                <h4 className="font-medium text-[var(--text-primary)] text-sm lg:text-base">{step.name || step.step_type}</h4>
+                <div className="flex items-center gap-2 flex-wrap">
+                  {step.is_repeatable && <Badge status="ACTIVE" text="Repeatable" />}
+                  {step.requires_approval && <Badge status="WARNING" text="Approval" />}
+                </div>
               </div>
-              <p className="text-xs text-[var(--text-muted)]">
+              <p className="text-xs text-[var(--text-muted)] truncate mt-0.5">
                 {step.service?.name ? `${step.service.name} · ` : ''}{step.step_type}
                 {step.step_type === 'SERVICE' && step.service?.full_url && ` · ${step.service.full_url}`}
               </p>
             </div>
 
-            <div className="flex items-center gap-2">
+            {/* Actions */}
+            <div className="flex items-center gap-2 self-end sm:self-auto flex-shrink-0">
               <button onClick={() => openEditStep(step)} className="p-2 hover:bg-[var(--bg-input)] rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors">
                 <Settings className="w-4 h-4" />
               </button>
@@ -187,15 +201,16 @@ const WorkflowBuilder = () => {
         ))}
 
         {workflow.steps?.length === 0 && (
-          <div className="text-center py-12 border-2 border-dashed border-[var(--border-color)] rounded-xl">
+          <div className="text-center py-8 lg:py-12 border-2 border-dashed border-[var(--border-color)] rounded-xl">
             <p className="text-[var(--text-muted)] mb-3">No steps defined yet</p>
-            <button onClick={openAddStep} className="btn-primary inline-flex items-center gap-2">
+            <button onClick={openAddStep} className="btn-primary inline-flex items-center gap-2 text-sm">
               <Plus className="w-4 h-4" /> Add First Step
             </button>
           </div>
         )}
       </div>
 
+      {/* Modal */}
       <Modal isOpen={showStepModal} onClose={() => { setShowStepModal(false); setEditingStep(null); }} title={editingStep ? 'Edit Step' : 'Add Step'} size="lg">
         <div className="space-y-4 max-h-[70vh] overflow-y-auto no-scrollbar pr-2">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -221,7 +236,7 @@ const WorkflowBuilder = () => {
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="label">Order</label>
               <input type="number" className="input-field" value={stepForm.order} onChange={e => setStepForm({...stepForm, order: parseInt(e.target.value)})} />
@@ -232,7 +247,7 @@ const WorkflowBuilder = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-6">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
             <label className="flex items-center gap-2 cursor-pointer">
               <input type="checkbox" className="w-4 h-4 rounded border-[var(--border-color)] text-accent" checked={stepForm.requires_approval} onChange={e => setStepForm({...stepForm, requires_approval: e.target.checked})} />
               <span className="text-sm text-[var(--text-secondary)]">Requires Approval</span>
@@ -244,7 +259,7 @@ const WorkflowBuilder = () => {
           </div>
 
           {stepForm.is_repeatable && (
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="label">Min Repetitions</label>
                 <input type="number" className="input-field" value={stepForm.min_repetitions} onChange={e => setStepForm({...stepForm, min_repetitions: parseInt(e.target.value)})} />

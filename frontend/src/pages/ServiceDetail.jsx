@@ -160,23 +160,23 @@ const ServiceDetail = () => {
   const fields = service.service_fields || [];
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-4 lg:space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <button onClick={() => navigate('/services')} className="text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 lg:gap-4">
+        <button onClick={() => navigate('/services')} className="text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors flex-shrink-0">
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <div className="flex-1">
-          <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="page-title">{service.name}</h1>
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 flex-wrap">
+            <h1 className="page-title text-lg lg:text-2xl truncate">{service.name}</h1>
             <Badge status={service.status} />
           </div>
-          <p className="text-sm text-[var(--text-muted)]">{service.agency?.name} · {service.http_method} {service.full_url}</p>
+          <p className="text-xs lg:text-sm text-[var(--text-muted)] truncate">{service.agency?.name} · {service.http_method} {service.full_url}</p>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 border-b border-[var(--border-color)]">
+      {/* Tabs - Scrollable on mobile */}
+      <div className="flex gap-1 border-b border-[var(--border-color)] overflow-x-auto no-scrollbar">
         {[
           { id: 'details', label: 'Details', icon: Globe },
           { id: 'fields', label: `Fields (${fields.length})`, icon: Hash },
@@ -187,7 +187,7 @@ const ServiceDetail = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+              className={`flex items-center gap-2 px-3 lg:px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                 activeTab === tab.id
                   ? 'border-accent text-accent'
                   : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)]'
@@ -201,15 +201,15 @@ const ServiceDetail = () => {
 
       {/* DETAILS TAB */}
       {activeTab === 'details' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            <div className="glass-panel p-5">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
+          <div className="lg:col-span-2 space-y-4 lg:space-y-6">
+            <div className="glass-panel p-4 lg:p-5">
               <h3 className="section-title mb-3">Service Details</h3>
               <p className="text-sm text-[var(--text-secondary)] mb-4">{service.description || 'No description.'}</p>
-              <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 lg:gap-4 text-sm">
                 <div className="p-3 rounded-lg bg-[var(--bg-input)] border border-[var(--border-color)]">
                   <p className="text-xs text-[var(--text-muted)] mb-1">Endpoint</p>
-                  <p className="font-mono text-[var(--text-primary)] break-all">{service.full_url}</p>
+                  <p className="font-mono text-[var(--text-primary)] break-all text-xs lg:text-sm">{service.full_url}</p>
                 </div>
                 <div className="p-3 rounded-lg bg-[var(--bg-input)] border border-[var(--border-color)]">
                   <p className="text-xs text-[var(--text-muted)] mb-1">Method</p>
@@ -226,7 +226,7 @@ const ServiceDetail = () => {
               </div>
             </div>
 
-            <div className="glass-panel p-5">
+            <div className="glass-panel p-4 lg:p-5">
               <h3 className="section-title mb-3">Request Schema (Legacy)</h3>
               <pre className="text-xs font-mono text-[var(--text-secondary)] bg-[var(--bg-input)] p-3 rounded-lg overflow-auto max-h-48 no-scrollbar">
                 {JSON.stringify(service.request_schema || {}, null, 2)}
@@ -235,14 +235,14 @@ const ServiceDetail = () => {
           </div>
 
           <div className="space-y-4">
-            <div className="glass-panel p-5">
+            <div className="glass-panel p-4 lg:p-5">
               <h3 className="section-title mb-3">Health</h3>
               <div className="flex items-center gap-2 mb-3">
                 <Activity className={`w-5 h-5 ${service.health_status === 'ONLINE' ? 'text-success' : service.health_status === 'DEGRADED' ? 'text-warning' : 'text-danger'}`} />
                 <span className="font-medium text-[var(--text-primary)]">{service.health_status}</span>
               </div>
             </div>
-            <div className="glass-panel p-5">
+            <div className="glass-panel p-4 lg:p-5">
               <h3 className="section-title mb-3">Auth Config</h3>
               <pre className="text-xs font-mono text-[var(--text-secondary)] bg-[var(--bg-input)] p-3 rounded-lg overflow-auto max-h-48 no-scrollbar">
                 {JSON.stringify(service.agency?.auth_config || {}, null, 2)}
@@ -255,12 +255,12 @@ const ServiceDetail = () => {
       {/* FIELDS TAB */}
       {activeTab === 'fields' && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h3 className="text-lg font-semibold text-[var(--text-primary)]">Field Definitions</h3>
               <p className="text-sm text-[var(--text-muted)]">Define how the frontend collects data and where each field goes in the HTTP request.</p>
             </div>
-            <button onClick={openAddField} className="btn-primary flex items-center gap-2">
+            <button onClick={openAddField} className="btn-primary flex items-center gap-2 text-sm self-start sm:self-auto">
               <Plus className="w-4 h-4" /> Add Field
             </button>
           </div>
@@ -274,18 +274,18 @@ const ServiceDetail = () => {
 
           <div className="space-y-2">
             {fields.sort((a, b) => (a.order || 0) - (b.order || 0)).map(field => (
-              <div key={field.id} className="glass-panel p-4 flex items-center gap-4">
-                <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center text-accent font-bold text-xs">
+              <div key={field.id} className="glass-panel p-3 lg:p-4 flex flex-col sm:flex-row sm:items-center gap-3 lg:gap-4">
+                <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center text-accent font-bold text-xs flex-shrink-0">
                   {field.order}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-medium text-[var(--text-primary)]">{field.label || field.name}</span>
+                    <span className="font-medium text-[var(--text-primary)] text-sm">{field.label || field.name}</span>
                     <span className="text-xs font-mono text-[var(--text-muted)] bg-[var(--bg-input)] px-2 py-0.5 rounded border border-[var(--border-color)]">{field.name}</span>
                     {field.required && <Badge status="ACTIVE" text="Required" />}
                     {field.is_sensitive && <Badge status="WARNING" text="Sensitive" />}
                   </div>
-                  <div className="flex items-center gap-3 mt-1 text-xs text-[var(--text-muted)]">
+                  <div className="flex items-center gap-3 mt-1 text-xs text-[var(--text-muted)] flex-wrap">
                     <span className="flex items-center gap-1"><Type className="w-3 h-3" /> {field.field_type}</span>
                     <span className="flex items-center gap-1"><Globe className="w-3 h-3" /> {field.location}</span>
                     {field.validation_regex && <span className="font-mono">regex</span>}
@@ -293,7 +293,7 @@ const ServiceDetail = () => {
                     {field.max_length && <span>max:{field.max_length}</span>}
                   </div>
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 self-end sm:self-auto">
                   <button onClick={() => openEditField(field)} className="p-2 hover:bg-[var(--bg-input)] rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors">
                     <Code className="w-4 h-4" />
                   </button>
@@ -309,9 +309,9 @@ const ServiceDetail = () => {
 
       {/* PREVIEW & TEST TAB */}
       {activeTab === 'preview' && schema && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
           <div className="space-y-4">
-            <div className="glass-panel p-5">
+            <div className="glass-panel p-4 lg:p-5">
               <h3 className="section-title mb-3 flex items-center gap-2">
                 <Eye className="w-4 h-4" /> Test Form (Auto-Generated)
               </h3>
@@ -335,11 +335,11 @@ const ServiceDetail = () => {
                 data={previewValues}
                 onChange={setPreviewValues}
               />
-              <div className="flex gap-3 mt-6 pt-4 border-t border-[var(--border-color)]">
-                <button onClick={handlePreview} disabled={testing} className="btn-secondary flex items-center gap-2 flex-1 justify-center">
+              <div className="flex flex-col sm:flex-row gap-3 mt-6 pt-4 border-t border-[var(--border-color)]">
+                <button onClick={handlePreview} disabled={testing} className="btn-secondary flex items-center gap-2 flex-1 justify-center text-sm">
                   <Eye className="w-4 h-4" /> {testing ? 'Building...' : 'Preview Request'}
                 </button>
-                <button onClick={handleExecute} disabled={testing} className="btn-primary flex items-center gap-2 flex-1 justify-center">
+                <button onClick={handleExecute} disabled={testing} className="btn-primary flex items-center gap-2 flex-1 justify-center text-sm">
                   <Zap className="w-4 h-4" /> {testing ? 'Executing...' : 'Execute'}
                 </button>
               </div>
@@ -348,7 +348,7 @@ const ServiceDetail = () => {
 
           <div className="space-y-4">
             {previewResult && !previewResult.error && (
-              <div className="glass-panel p-5">
+              <div className="glass-panel p-4 lg:p-5">
                 <h3 className="section-title mb-3 flex items-center gap-2">
                   <Code className="w-4 h-4" /> Request Preview
                 </h3>
@@ -359,7 +359,7 @@ const ServiceDetail = () => {
             )}
 
             {previewResult?.error && (
-              <div className="glass-panel p-5 border-l-2 border-l-danger">
+              <div className="glass-panel p-4 lg:p-5 border-l-2 border-l-danger">
                 <h3 className="section-title mb-3 text-danger flex items-center gap-2">
                   <AlertTriangle className="w-4 h-4" /> Preview Error
                 </h3>
@@ -371,12 +371,12 @@ const ServiceDetail = () => {
 
             {executeResult && !executeResult.error && (
               <div className="space-y-4">
-                <div className="glass-panel p-5">
+                <div className="glass-panel p-4 lg:p-5">
                   <h3 className="section-title mb-3 flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-success" /> Execution Result
                   </h3>
                   <div className="space-y-3 text-sm">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-[var(--text-muted)]">Status:</span>
                       <Badge status={executeResult.health_status || 'ONLINE'} text={executeResult.response?.status_code?.toString()} />
                       <span className="text-[var(--text-muted)]">{executeResult.response?.response_time_ms}ms</span>
@@ -399,7 +399,7 @@ const ServiceDetail = () => {
             )}
 
             {executeResult?.error && (
-              <div className="glass-panel p-5 border-l-2 border-l-danger">
+              <div className="glass-panel p-4 lg:p-5 border-l-2 border-l-danger">
                 <h3 className="section-title mb-3 text-danger flex items-center gap-2">
                   <AlertTriangle className="w-4 h-4" /> Execution Error
                 </h3>
@@ -491,7 +491,7 @@ const ServiceDetail = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-6 flex-wrap">
             <label className="flex items-center gap-2 cursor-pointer">
               <input type="checkbox" className="w-4 h-4 rounded border-[var(--border-color)] text-accent"
                 checked={fieldForm.required} onChange={e => setFieldForm({...fieldForm, required: e.target.checked})} />

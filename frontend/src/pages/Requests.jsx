@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Filter, ArrowRight, User, Calendar } from 'lucide-react';
+import { Plus, Search, ArrowRight, User, Calendar } from 'lucide-react';
 import api from '../api/axios';
 import Loading from '../components/Loading';
 import Badge from '../components/Badge';
@@ -36,7 +36,6 @@ const Requests = () => {
 
   const handleWorkflowSelect = (wf) => {
     setSelectedWorkflow(wf);
-    // Build initial form data from all service fields across steps
     const initial = { applicant_name: '', applicant_contact: '' };
     wf.steps?.forEach(step => {
       if (step.service?.field_definitions) {
@@ -78,31 +77,76 @@ const Requests = () => {
   if (loading) return <Loading />;
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 lg:space-y-6 animate-fade-in">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="page-title">Service Requests</h1>
+          <h1 className="page-title text-lg lg:text-2xl">Service Requests</h1>
           <p className="text-sm text-[var(--text-muted)] mt-1">Process citizen applications through agency workflows</p>
         </div>
-        <button onClick={() => setShowNewModal(true)} className="btn-primary flex items-center gap-2">
+        <button onClick={() => setShowNewModal(true)} className="btn-primary flex items-center gap-2 text-sm self-start sm:self-auto">
           <Plus className="w-4 h-4" /> New Request
         </button>
       </div>
 
-      <div className="flex items-center gap-3">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" />
-          <input
-            type="text"
-            className="input-field pl-10"
-            placeholder="Search requests..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
-        </div>
+      {/* Search */}
+      <div className="relative max-w-full sm:max-w-md">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" />
+        <input
+          type="text"
+          className="input-field pl-10 w-full"
+          placeholder="Search requests..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
       </div>
 
-      <div className="glass-panel overflow-hidden">
+      {/* Mobile: Card View */}
+      <div className="block lg:hidden space-y-3">
+        {filtered.length === 0 && (
+          <div className="text-center py-8 text-[var(--text-muted)]">No requests found</div>
+        )}
+        {filtered.map(req => (
+          <div
+            key={req.id}
+            onClick={() => navigate(`/requests/${req.id}`)}
+            className="glass-panel p-4 cursor-pointer hover:bg-[var(--bg-input)] transition-colors"
+          >
+            <div className="flex items-start justify-between mb-2">
+              <div>
+                <p className="text-sm font-medium text-[var(--text-primary)]">#{req.id}</p>
+                <p className="text-xs text-[var(--text-muted)]">{req.workflow_name}</p>
+              </div>
+              <Badge status={req.status} />
+            </div>
+            <div className="flex items-center gap-2 text-xs text-[var(--text-muted)] mb-2">
+              <User className="w-3 h-3" />
+              <span>{req.applicant_name || 'Unknown'}</span>
+              <span>·</span>
+              <span>{req.agency_name}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="flex-1 h-1.5 bg-[var(--bg-input)] rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-accent rounded-full"
+                  style={{ width: `${req.total_steps ? (req.completed_steps / req.total_steps) * 100 : 0}%` }}
+                />
+              </div>
+              <span className="text-xs text-[var(--text-muted)]">{req.completed_steps || 0}/{req.total_steps || 0}</span>
+            </div>
+            <div className="mt-2 flex items-center justify-between text-xs text-[var(--text-muted)]">
+              <span className="flex items-center gap-1">
+                <Calendar className="w-3 h-3" />
+                {new Date(req.started_at).toLocaleDateString()}
+              </span>
+              <ArrowRight className="w-4 h-4" />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop: Table View */}
+      <div className="hidden lg:block glass-panel overflow-hidden">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-[var(--border-color)] text-[var(--text-muted)] text-left">
@@ -118,10 +162,16 @@ const Requests = () => {
           </thead>
           <tbody>
             {filtered.length === 0 && (
-              <tr><td colSpan={8} className="px-4 py-8 text-center text-[var(--text-muted)]">No requests found</td></tr>
+              <tr>
+                <td colSpan={8} className="px-4 py-8 text-center text-[var(--text-muted)]">No requests found</td>
+              </tr>
             )}
             {filtered.map(req => (
-              <tr key={req.id} className="border-b border-[var(--border-color)] hover:bg-[var(--bg-input)] transition-colors cursor-pointer" onClick={() => navigate(`/requests/${req.id}`)}>
+              <tr
+                key={req.id}
+                className="border-b border-[var(--border-color)] hover:bg-[var(--bg-input)] transition-colors cursor-pointer"
+                onClick={() => navigate(`/requests/${req.id}`)}
+              >
                 <td className="px-4 py-3 font-mono text-[var(--text-muted)]">#{req.id}</td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
@@ -208,7 +258,6 @@ const Requests = () => {
               </div>
             </div>
 
-            {/* Dynamic fields from workflow steps */}
             {selectedWorkflow.steps?.map(step => {
               if (!step.service?.field_definitions?.length) return null;
               return (

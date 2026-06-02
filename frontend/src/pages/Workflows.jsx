@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Plus, ArrowRight, GitBranch, Layers, Copy, Archive } from 'lucide-react';
+import { Search, Plus, ArrowRight, GitBranch } from 'lucide-react';
 import api from '../api/axios';
 import Loading from '../components/Loading';
 import Badge from '../components/Badge';
@@ -59,43 +59,51 @@ const Workflows = () => {
   if (loading) return <Loading />;
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 lg:space-y-6 animate-fade-in">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="page-title">Workflows</h1>
+          <h1 className="page-title text-lg lg:text-2xl">Workflows</h1>
           <p className="text-sm text-[var(--text-muted)] mt-1">Multi-agency process definitions</p>
         </div>
-        <button onClick={() => setShowModal(true)} className="btn-primary flex items-center gap-2">
+        <button onClick={() => setShowModal(true)} className="btn-primary flex items-center gap-2 text-sm self-start sm:self-auto">
           <Plus className="w-4 h-4" /> Create Workflow
         </button>
       </div>
 
-      <div className="relative max-w-md">
+      {/* Search */}
+      <div className="relative max-w-full sm:max-w-md">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" />
-        <input className="input-field pl-10" placeholder="Search workflows..." value={search} onChange={e => setSearch(e.target.value)} />
+        <input className="input-field pl-10 w-full" placeholder="Search workflows..." value={search} onChange={e => setSearch(e.target.value)} />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filtered.length === 0 && <p className="text-[var(--text-muted)] col-span-full">No workflows found</p>}
+      {/* Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4">
+        {filtered.length === 0 && (
+          <p className="text-[var(--text-muted)] col-span-full text-center py-8">No workflows found</p>
+        )}
         {filtered.map(wf => (
-          <div key={wf.id} className="glass-panel p-5 hover:border-accent/30 transition-all group">
+          <div key={wf.id} className="glass-panel p-4 lg:p-5 hover:border-accent/30 transition-all group">
             <div className="flex items-start justify-between mb-3">
-              <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
-                <GitBranch className="w-5 h-5 text-accent" />
+              <div className="w-9 h-9 lg:w-10 lg:h-10 rounded-lg bg-accent/10 flex items-center justify-center">
+                <GitBranch className="w-4 h-4 lg:w-5 lg:h-5 text-accent" />
               </div>
               <Badge status={wf.status} />
             </div>
-            <h3 className="font-semibold text-[var(--text-primary)] mb-1 group-hover:text-accent transition-colors cursor-pointer" onClick={() => navigate(`/workflows/${wf.id}`)}>
+            <h3
+              className="font-semibold text-[var(--text-primary)] mb-1 group-hover:text-accent transition-colors cursor-pointer text-sm lg:text-base truncate"
+              onClick={() => navigate(`/workflows/${wf.id}`)}
+            >
               {wf.name}
             </h3>
-            <p className="text-xs text-[var(--text-muted)] mb-3">{wf.agency_name} · v{wf.version} · {wf.step_count} steps</p>
-            <div className="flex items-center gap-2">
+            <p className="text-xs text-[var(--text-muted)] mb-3 truncate">{wf.agency_name} · v{wf.version} · {wf.step_count} steps</p>
+            <div className="flex items-center gap-2 flex-wrap">
               {wf.status === 'DRAFT' && (
                 <button onClick={() => handlePublish(wf.id)} className="btn-primary text-xs py-1.5 px-3 flex-1">
                   Publish
                 </button>
               )}
-              <button onClick={() => navigate(`/workflows/${wf.id}`)} className="btn-secondary text-xs py-1.5 px-3 flex items-center gap-1">
+              <button onClick={() => navigate(`/workflows/${wf.id}`)} className="btn-secondary text-xs py-1.5 px-3 flex items-center gap-1 flex-1 justify-center">
                 Edit <ArrowRight className="w-3 h-3" />
               </button>
             </div>
@@ -103,6 +111,7 @@ const Workflows = () => {
         ))}
       </div>
 
+      {/* Modal */}
       <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Create Workflow" size="md">
         <div className="space-y-4">
           <div>

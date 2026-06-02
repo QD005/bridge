@@ -33,39 +33,41 @@ const Settings = () => {
   ];
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-4 lg:space-y-6 animate-fade-in">
       <div>
-        <h1 className="page-title">Settings</h1>
+        <h1 className="page-title text-lg lg:text-2xl">Settings</h1>
         <p className="text-sm text-[var(--text-muted)] mt-1">Manage your account and preferences</p>
       </div>
 
-      <div className="flex gap-6">
+      <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
         {/* Tabs */}
-        <div className="w-56 flex-shrink-0 space-y-1">
-          {tabs.map(tab => {
-            const Icon = tab.icon;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                  activeTab === tab.id
-                    ? 'bg-accent/10 text-accent'
-                    : 'text-[var(--text-secondary)] hover:bg-[var(--bg-input)] hover:text-[var(--text-primary)]'
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                {tab.label}
-              </button>
-            );
-          })}
+        <div className="lg:w-56 flex-shrink-0">
+          <div className="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible no-scrollbar pb-2 lg:pb-0">
+            {tabs.map(tab => {
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center gap-2 lg:gap-3 px-3 lg:px-4 py-2.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
+                    activeTab === tab.id
+                      ? 'bg-accent/10 text-accent'
+                      : 'text-[var(--text-secondary)] hover:bg-[var(--bg-input)] hover:text-[var(--text-primary)]'
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* Content */}
-        <div className="flex-1 glass-panel p-6">
+        <div className="flex-1 glass-panel p-4 lg:p-6">
           {activeTab === 'profile' && (
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Profile Information</h3>
+              <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)] mb-4">Profile Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="label">First Name</label>
@@ -85,7 +87,7 @@ const Settings = () => {
                 </div>
               </div>
               <div className="pt-4">
-                <button onClick={handleSaveProfile} className="btn-primary flex items-center gap-2">
+                <button onClick={handleSaveProfile} className="btn-primary flex items-center gap-2 text-sm">
                   {saved ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
                   {saved ? 'Saved!' : 'Save Changes'}
                 </button>
@@ -95,8 +97,8 @@ const Settings = () => {
 
           {activeTab === 'security' && (
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Security</h3>
-              <div className="space-y-4 max-w-md">
+              <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)] mb-4">Security</h3>
+              <div className="space-y-4 max-w-full lg:max-w-md">
                 <div>
                   <label className="label">Current Password</label>
                   <input type="password" className="input-field" placeholder="••••••••" />
@@ -109,14 +111,14 @@ const Settings = () => {
                   <label className="label">Confirm New Password</label>
                   <input type="password" className="input-field" placeholder="••••••••" />
                 </div>
-                <button className="btn-primary">Update Password</button>
+                <button className="btn-primary text-sm">Update Password</button>
               </div>
             </div>
           )}
 
           {activeTab === 'notifications' && (
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Notification Preferences</h3>
+              <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)] mb-4">Notification Preferences</h3>
               <div className="space-y-3">
                 {[
                   { label: 'Workflow completions', desc: 'Get notified when a workflow finishes' },
@@ -125,7 +127,7 @@ const Settings = () => {
                   { label: 'System alerts', desc: 'Get notified about system-wide events' },
                 ].map((pref, i) => (
                   <label key={i} className="flex items-start gap-3 p-3 rounded-lg bg-[var(--bg-input)] border border-[var(--border-color)] cursor-pointer hover:border-accent/30 transition-colors">
-                    <input type="checkbox" defaultChecked className="w-4 h-4 mt-0.5 rounded border-[var(--border-color)] text-accent" />
+                    <input type="checkbox" defaultChecked className="w-4 h-4 mt-0.5 rounded border-[var(--border-color)] text-accent flex-shrink-0" />
                     <div>
                       <p className="text-sm font-medium text-[var(--text-primary)]">{pref.label}</p>
                       <p className="text-xs text-[var(--text-muted)]">{pref.desc}</p>
@@ -138,15 +140,15 @@ const Settings = () => {
 
           {activeTab === 'appearance' && (
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Appearance</h3>
-              <div className="flex items-center justify-between p-4 rounded-lg bg-[var(--bg-input)] border border-[var(--border-color)]">
+              <h3 className="text-base lg:text-lg font-semibold text-[var(--text-primary)] mb-4">Appearance</h3>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-lg bg-[var(--bg-input)] border border-[var(--border-color)]">
                 <div>
                   <p className="text-sm font-medium text-[var(--text-primary)]">Theme</p>
                   <p className="text-xs text-[var(--text-muted)]">Choose between light and dark mode</p>
                 </div>
                 <button
                   onClick={toggleTheme}
-                  className="px-4 py-2 rounded-lg bg-accent text-white text-sm font-medium hover:bg-accent-hover transition-colors"
+                  className="px-4 py-2 rounded-lg bg-accent text-white text-sm font-medium hover:bg-accent-hover transition-colors self-start sm:self-auto"
                 >
                   {theme === 'dark' ? 'Switch to Light' : 'Switch to Dark'}
                 </button>

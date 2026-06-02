@@ -51,23 +51,59 @@ const Services = () => {
   if (loading) return <Loading />;
 
   return (
-    <div className="flex flex-col gap-6 animate-fade-in">
-      <div className="flex items-center justify-between">
+    <div className="flex flex-col gap-4 lg:gap-6 animate-fade-in">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="page-title">Service Registry</h1>
+          <h1 className="page-title text-lg lg:text-2xl">Service Registry</h1>
           <p className="text-sm text-[var(--text-muted)] mt-1">API endpoints published by government agencies</p>
         </div>
-        <button onClick={() => setShowModal(true)} className="btn-primary flex items-center gap-2">
+        <button onClick={() => setShowModal(true)} className="btn-primary flex items-center gap-2 text-sm self-start sm:self-auto">
           <Plus className="w-4 h-4" /> Register Service
         </button>
       </div>
 
-      <div className="relative max-w-md">
+      {/* Search */}
+      <div className="relative max-w-full sm:max-w-md">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" />
-        <input className="input-field pl-10" placeholder="Search services..." value={search} onChange={e => setSearch(e.target.value)} />
+        <input className="input-field pl-10 w-full" placeholder="Search services..." value={search} onChange={e => setSearch(e.target.value)} />
       </div>
 
-      <div className="glass-panel overflow-hidden">
+      {/* Mobile: Card View */}
+      <div className="block lg:hidden space-y-3">
+        {filtered.length === 0 && (
+          <div className="text-center py-8 text-[var(--text-muted)]">No services found</div>
+        )}
+        {filtered.map(s => (
+          <div
+            key={s.id}
+            onClick={() => navigate(`/services/${s.id}`)}
+            className="glass-panel p-4 cursor-pointer hover:border-accent/30 transition-all"
+          >
+            <div className="flex items-start justify-between mb-2">
+              <div className="min-w-0 flex-1">
+                <p className="font-medium text-[var(--text-primary)] text-sm truncate">{s.name}</p>
+                <p className="text-xs text-[var(--text-muted)] font-mono truncate mt-0.5">{s.full_url}</p>
+              </div>
+              <Badge status={s.status} />
+            </div>
+            <div className="flex items-center gap-3 flex-wrap text-xs text-[var(--text-muted)]">
+              <span>{s.agency_name}</span>
+              <span className="font-mono px-1.5 py-0.5 rounded bg-[var(--bg-input)] border border-[var(--border-color)]">{s.http_method}</span>
+              <span className="flex items-center gap-1">
+                <Hash className="w-3 h-3" /> {s.service_fields?.length || 0}
+              </span>
+            </div>
+            <div className="mt-2 flex items-center justify-between">
+              <Badge status={s.health_status} text={s.health_status} />
+              <ArrowRight className="w-4 h-4 text-[var(--text-muted)]" />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop: Table View */}
+      <div className="hidden lg:block glass-panel overflow-hidden">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-[var(--border-color)] text-[var(--text-muted)] text-left">
@@ -81,9 +117,17 @@ const Services = () => {
             </tr>
           </thead>
           <tbody>
-            {filtered.length === 0 && <tr><td colSpan={7} className="px-4 py-8 text-center text-[var(--text-muted)]">No services found</td></tr>}
+            {filtered.length === 0 && (
+              <tr>
+                <td colSpan={7} className="px-4 py-8 text-center text-[var(--text-muted)]">No services found</td>
+              </tr>
+            )}
             {filtered.map(s => (
-              <tr key={s.id} className="border-b border-[var(--border-color)] hover:bg-[var(--bg-input)] transition-colors cursor-pointer" onClick={() => navigate(`/services/${s.id}`)}>
+              <tr
+                key={s.id}
+                className="border-b border-[var(--border-color)] hover:bg-[var(--bg-input)] transition-colors cursor-pointer"
+                onClick={() => navigate(`/services/${s.id}`)}
+              >
                 <td className="px-4 py-3">
                   <p className="font-medium text-[var(--text-primary)]">{s.name}</p>
                   <p className="text-xs text-[var(--text-muted)] font-mono truncate max-w-xs">{s.full_url}</p>
@@ -106,6 +150,7 @@ const Services = () => {
         </table>
       </div>
 
+      {/* Modal */}
       <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Register Service" size="xl">
         <div className="space-y-4 max-h-[70vh] overflow-y-auto no-scrollbar pr-2">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

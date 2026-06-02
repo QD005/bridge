@@ -116,49 +116,49 @@ const AuditLogs = () => {
   const hasMore = offset + limit < total;
 
   return (
-    <div className="flex flex-col gap-6 animate-fade-in">
+    <div className="flex flex-col gap-4 lg:gap-6 animate-fade-in">
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="page-title flex items-center gap-2">
+          <h1 className="page-title text-xl lg:text-2xl flex items-center gap-2">
             <Activity className="w-5 h-5" /> Audit Logs
           </h1>
           <p className="text-sm text-[var(--text-muted)] mt-1">Track every action across the system</p>
         </div>
-        <button onClick={exportCSV} className="btn-secondary flex items-center gap-2">
+        <button onClick={exportCSV} className="btn-secondary flex items-center gap-2 text-sm w-full sm:w-auto justify-center">
           <Download className="w-4 h-4" /> Export CSV
         </button>
       </div>
 
       {/* Stats Cards */}
       {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="glass-panel p-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
+          <div className="glass-panel p-3 lg:p-4">
             <p className="text-xs text-[var(--text-muted)] uppercase">Total Actions</p>
-            <p className="text-2xl font-bold text-[var(--text-primary)] mt-1">{stats.total_actions}</p>
+            <p className="text-xl lg:text-2xl font-bold text-[var(--text-primary)] mt-1">{stats.total_actions}</p>
           </div>
-          <div className="glass-panel p-4">
+          <div className="glass-panel p-3 lg:p-4">
             <p className="text-xs text-[var(--text-muted)] uppercase">Today</p>
-            <p className="text-2xl font-bold text-accent mt-1">{stats.today}</p>
+            <p className="text-xl lg:text-2xl font-bold text-accent mt-1">{stats.today}</p>
           </div>
-          <div className="glass-panel p-4">
+          <div className="glass-panel p-3 lg:p-4">
             <p className="text-xs text-[var(--text-muted)] uppercase">Last 7 Days</p>
-            <p className="text-2xl font-bold text-info mt-1">{stats.last_7_days}</p>
+            <p className="text-xl lg:text-2xl font-bold text-info mt-1">{stats.last_7_days}</p>
           </div>
-          <div className="glass-panel p-4 border-l-2 border-l-danger">
+          <div className="glass-panel p-3 lg:p-4 border-l-2 border-l-danger">
             <p className="text-xs text-[var(--text-muted)] uppercase">Failed Actions</p>
-            <p className="text-2xl font-bold text-danger mt-1">{stats.failed_actions}</p>
+            <p className="text-xl lg:text-2xl font-bold text-danger mt-1">{stats.failed_actions}</p>
           </div>
         </div>
       )}
 
       {/* Filters */}
-      <div className="glass-panel p-4">
+      <div className="glass-panel p-3 lg:p-4">
         <div className="flex items-center gap-2 mb-3">
           <Filter className="w-4 h-4 text-[var(--text-muted)]" />
           <span className="text-sm font-medium text-[var(--text-primary)]">Filters</span>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
           <select
             className="input-field text-sm"
             value={filters.action}
@@ -206,98 +206,152 @@ const AuditLogs = () => {
         </div>
       </div>
 
-      {/* Logs Table */}
+      {/* Mobile Cards / Desktop Table */}
       <div className="glass-panel overflow-hidden">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-[var(--border-color)] text-[var(--text-muted)] text-left">
-              <th className="px-4 py-3 font-medium">Time</th>
-              <th className="px-4 py-3 font-medium">User</th>
-              <th className="px-4 py-3 font-medium">Action</th>
-              <th className="px-4 py-3 font-medium">Status</th>
-              <th className="px-4 py-3 font-medium">Entity</th>
-              <th className="px-4 py-3 font-medium">Method</th>
-              <th className="px-4 py-3 font-medium">Description</th>
-              <th className="px-4 py-3 font-medium"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading && logs.length === 0 && (
-              <tr><td colSpan={8} className="px-4 py-8 text-center text-[var(--text-muted)]"><Loading /></td></tr>
-            )}
-            {logs.length === 0 && !loading && (
-              <tr><td colSpan={8} className="px-4 py-8 text-center text-[var(--text-muted)]">No logs found</td></tr>
-            )}
+        {/* Desktop Table */}
+        <div className="hidden lg:block overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-[var(--border-color)] text-[var(--text-muted)] text-left">
+                <th className="px-4 py-3 font-medium whitespace-nowrap">Time</th>
+                <th className="px-4 py-3 font-medium whitespace-nowrap">User</th>
+                <th className="px-4 py-3 font-medium whitespace-nowrap">Action</th>
+                <th className="px-4 py-3 font-medium whitespace-nowrap">Status</th>
+                <th className="px-4 py-3 font-medium whitespace-nowrap">Entity</th>
+                <th className="px-4 py-3 font-medium whitespace-nowrap">Method</th>
+                <th className="px-4 py-3 font-medium whitespace-nowrap">Description</th>
+                <th className="px-4 py-3 font-medium whitespace-nowrap"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading && logs.length === 0 && (
+                <tr><td colSpan={8} className="px-4 py-8 text-center text-[var(--text-muted)]"><Loading /></td></tr>
+              )}
+              {logs.length === 0 && !loading && (
+                <tr><td colSpan={8} className="px-4 py-8 text-center text-[var(--text-muted)]">No logs found</td></tr>
+              )}
+              {logs.map(log => {
+                const StatusIcon = STATUS_ICONS[log.status] || Clock;
+                return (
+                  <tr 
+                    key={log.id} 
+                    className="border-b border-[var(--border-color)] hover:bg-[var(--bg-input)] transition-colors cursor-pointer"
+                    onClick={() => fetchLogDetail(log.id)}
+                  >
+                    <td className="px-4 py-3 text-[var(--text-muted)] whitespace-nowrap">
+                      {new Date(log.created_at).toLocaleString()}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <User className="w-3.5 h-3.5 text-[var(--text-muted)] flex-shrink-0" />
+                        <span className="text-[var(--text-primary)]">{log.user_name || 'System'}</span>
+                        <span className="text-[10px] text-[var(--text-muted)] bg-[var(--bg-input)] px-1.5 py-0.5 rounded">{log.user_role || 'N/A'}</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`text-[10px] px-2 py-0.5 rounded border ${ACTION_COLORS[log.action] || ACTION_COLORS.OTHER}`}>
+                        {log.action.replace(/_/g, ' ')}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-1.5">
+                        <StatusIcon className={`w-3.5 h-3.5 ${log.status === 'SUCCESS' ? 'text-success' : log.status === 'FAILED' ? 'text-danger' : 'text-warning'}`} />
+                        <span className={`text-xs ${log.status === 'SUCCESS' ? 'text-success' : log.status === 'FAILED' ? 'text-danger' : 'text-warning'}`}>
+                          {log.status}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-[var(--text-secondary)]">
+                      {log.entity_type || '-'}
+                    </td>
+                    <td className="px-4 py-3">
+                      {log.http_method && (
+                        <span className="text-xs font-mono px-1.5 py-0.5 rounded bg-[var(--bg-input)] border border-[var(--border-color)]">
+                          {log.http_method}
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-[var(--text-secondary)] max-w-xs truncate">
+                      {log.description || '-'}
+                    </td>
+                    <td className="px-4 py-3">
+                      <Eye className="w-4 h-4 text-[var(--text-muted)]" />
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Mobile Cards */}
+        <div className="lg:hidden">
+          {loading && logs.length === 0 && (
+            <div className="px-4 py-8 text-center text-[var(--text-muted)]"><Loading /></div>
+          )}
+          {logs.length === 0 && !loading && (
+            <div className="px-4 py-8 text-center text-[var(--text-muted)]">No logs found</div>
+          )}
+          <div className="divide-y divide-[var(--border-color)]">
             {logs.map(log => {
               const StatusIcon = STATUS_ICONS[log.status] || Clock;
               return (
-                <tr 
-                  key={log.id} 
-                  className="border-b border-[var(--border-color)] hover:bg-[var(--bg-input)] transition-colors cursor-pointer"
+                <div
+                  key={log.id}
                   onClick={() => fetchLogDetail(log.id)}
+                  className="p-4 hover:bg-[var(--bg-input)] transition-colors cursor-pointer"
                 >
-                  <td className="px-4 py-3 text-[var(--text-muted)] whitespace-nowrap">
-                    {new Date(log.created_at).toLocaleString()}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <User className="w-3.5 h-3.5 text-[var(--text-muted)]" />
-                      <span className="text-[var(--text-primary)]">{log.user_name || 'System'}</span>
-                      <span className="text-[10px] text-[var(--text-muted)] bg-[var(--bg-input)] px-1.5 py-0.5 rounded">{log.user_role || 'N/A'}</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={`text-[10px] px-2 py-0.5 rounded border ${ACTION_COLORS[log.action] || ACTION_COLORS.OTHER}`}>
-                      {log.action.replace(/_/g, ' ')}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-1.5">
-                      <StatusIcon className={`w-3.5 h-3.5 ${log.status === 'SUCCESS' ? 'text-success' : log.status === 'FAILED' ? 'text-danger' : 'text-warning'}`} />
-                      <span className={`text-xs ${log.status === 'SUCCESS' ? 'text-success' : log.status === 'FAILED' ? 'text-danger' : 'text-warning'}`}>
-                        {log.status}
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className={`text-[10px] px-2 py-0.5 rounded border ${ACTION_COLORS[log.action] || ACTION_COLORS.OTHER}`}>
+                        {log.action.replace(/_/g, ' ')}
                       </span>
+                      <div className="flex items-center gap-1.5">
+                        <StatusIcon className={`w-3.5 h-3.5 ${log.status === 'SUCCESS' ? 'text-success' : log.status === 'FAILED' ? 'text-danger' : 'text-warning'}`} />
+                        <span className={`text-xs ${log.status === 'SUCCESS' ? 'text-success' : log.status === 'FAILED' ? 'text-danger' : 'text-warning'}`}>
+                          {log.status}
+                        </span>
+                      </div>
                     </div>
-                  </td>
-                  <td className="px-4 py-3 text-[var(--text-secondary)]">
-                    {log.entity_type || '-'}
-                  </td>
-                  <td className="px-4 py-3">
+                    <span className="text-[10px] text-[var(--text-muted)] whitespace-nowrap">
+                      {new Date(log.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
+                  <p className="text-sm text-[var(--text-secondary)] mb-2 line-clamp-2">{log.description || '-'}</p>
+                  <div className="flex items-center gap-3 text-xs text-[var(--text-muted)]">
+                    <span className="flex items-center gap-1">
+                      <User className="w-3 h-3" /> {log.user_name || 'System'}
+                    </span>
+                    {log.entity_type && <span>{log.entity_type}</span>}
                     {log.http_method && (
-                      <span className="text-xs font-mono px-1.5 py-0.5 rounded bg-[var(--bg-input)] border border-[var(--border-color)]">
+                      <span className="font-mono px-1 py-0.5 rounded bg-[var(--bg-input)] border border-[var(--border-color)]">
                         {log.http_method}
                       </span>
                     )}
-                  </td>
-                  <td className="px-4 py-3 text-[var(--text-secondary)] max-w-xs truncate">
-                    {log.description || '-'}
-                  </td>
-                  <td className="px-4 py-3">
-                    <Eye className="w-4 h-4 text-[var(--text-muted)]" />
-                  </td>
-                </tr>
+                  </div>
+                </div>
               );
             })}
-          </tbody>
-        </table>
+          </div>
+        </div>
         
         {/* Pagination */}
-        <div className="flex items-center justify-between p-4 border-t border-[var(--border-color)]">
+        <div className="flex flex-col sm:flex-row items-center justify-between p-4 border-t border-[var(--border-color)] gap-3">
           <span className="text-xs text-[var(--text-muted)]">
             Showing {offset + 1}-{Math.min(offset + limit, total)} of {total}
           </span>
-          <div className="flex gap-2">
+          <div className="flex gap-2 w-full sm:w-auto">
             <button 
               onClick={() => setOffset(prev => Math.max(0, prev - limit))}
               disabled={offset === 0}
-              className="btn-secondary text-sm py-1.5 px-3 disabled:opacity-50"
+              className="btn-secondary text-sm py-1.5 px-3 disabled:opacity-50 flex-1 sm:flex-none"
             >
               Previous
             </button>
             <button 
               onClick={() => setOffset(prev => prev + limit)}
               disabled={!hasMore}
-              className="btn-secondary text-sm py-1.5 px-3 disabled:opacity-50"
+              className="btn-secondary text-sm py-1.5 px-3 disabled:opacity-50 flex-1 sm:flex-none"
             >
               Next
             </button>
@@ -309,7 +363,7 @@ const AuditLogs = () => {
       <Modal isOpen={!!selectedLog} onClose={() => setSelectedLog(null)} title="Audit Log Detail" size="lg">
         {selectedLog && (
           <div className="space-y-4 max-h-[70vh] overflow-y-auto no-scrollbar">
-            <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
               <div className="p-3 rounded-lg bg-[var(--bg-input)] border border-[var(--border-color)]">
                 <p className="text-xs text-[var(--text-muted)] mb-1">User</p>
                 <p className="text-[var(--text-primary)]">
