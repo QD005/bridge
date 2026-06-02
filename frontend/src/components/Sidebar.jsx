@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Building2, Plug, Workflow, FileCheck,
-  MessageSquare, Bell, ClipboardList, Settings, Shield,
+  MessageSquare, Bell, ClipboardList, Settings,
   ChevronRight, X
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import api from '../api/axios';
+import eventBus from '../utils/events';
 
 const navItems = [
   { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
@@ -22,6 +24,48 @@ const navItems = [
 const Sidebar = ({ isOpen, onClose }) => {
   const { user } = useAuth();
   const location = useLocation();
+  const [unreadMessages, setUnreadMessages] = useState(0);
+
+  // Sum unread_count from all conversations
+  const fetchUnreadMessages = async () => {
+    try {
+      const res = await api.get('/collaboration/');
+      const total = (res.data || []).reduce((sum, c) => sum + (c.unread_count || 0), 0);
+      setUnreadMessages(total);
+    } catch (err) {
+      // Silently fail — sidebar shouldn't crash if chat API is down
+    }
+  };
+
+  useEffect(() => {
+    fetchUnreadMessages();
+
+    // Real-time update from Collaboration component
+    const unsubCount = eventBus.on('chat-unread-updated', ({ count }) => {
+      setUnreadMessages(count);
+    });
+
+    // Refresh immediately when a new message arrives via WS
+    const unsubNew = eventBus.on('chat-new-message', fetchUnreadMessages);
+
+    // Fallback poll every 30s when Collaboration is unmounted
+    const interval = setInterval(fetchUnreadMessages, 30000);
+
+    return () => {
+      unsubCount();
+      unsubNew();
+      clearInterval(interval);
+    };
+  }, []);
+
+  // Clear badge when user opens the chat page
+  useEffect(() => {
+    if (location.pathname === '/collaboration' || location.pathname.startsWith('/collaboration/')) {
+      setUnreadMessages(0);
+      // Optional: tell backend everything is seen
+      // api.post('/collaboration/mark-all-read/').catch(() => {});
+    }
+  }, [location.pathname]);
 
   return (
     <aside
@@ -48,7 +92,6 @@ const Sidebar = ({ isOpen, onClose }) => {
             <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider">Uganda</p>
           </div>
         </div>
-        {/* Mobile close button */}
         <button
           onClick={onClose}
           className="lg:hidden p-1.5 rounded-lg hover:bg-[var(--bg-input)] text-[var(--text-muted)]"
@@ -80,6 +123,9 @@ const Sidebar = ({ isOpen, onClose }) => {
         {navItems.map(item => {
           const Icon = item.icon;
           const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
+          const isChat = item.path === '/collaboration';
+          const showBadge = isChat && unreadMessages > 0 && !isActive;
+
           return (
             <NavLink
               key={item.path}
@@ -95,7 +141,15 @@ const Sidebar = ({ isOpen, onClose }) => {
             >
               <Icon className="w-4.5 h-4.5 flex-shrink-0" />
               <span className="flex-1">{item.label}</span>
-              {isActive && <ChevronRight className="w-4 h-4 flex-shrink-0" />}
+
+              <div className="ml-auto flex items-center gap-1">
+                {showBadge && (
+                  <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-danger text-white text-[10px] font-bold flex items-center justify-center">
+                    {unreadMessages > 99 ? '99+' : unreadMessages}
+                  </span>
+                )}
+                {isActive && <ChevronRight className="w-4 h-4 flex-shrink-0" />}
+              </div>
             </NavLink>
           );
         })}

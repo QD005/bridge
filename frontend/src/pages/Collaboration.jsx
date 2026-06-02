@@ -11,6 +11,7 @@ import Loading from '../components/Loading';
 import Modal from '../components/Modal';
 import { useAuth } from '../context/AuthContext';
 import { useChatWebSocket } from '../hooks/useChatWebSocket';
+import eventBus from '../utils/events';
 
 const TYPE_COLORS = {
   WORKFLOW: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
@@ -77,6 +78,12 @@ const Collaboration = () => {
   const [uploading, setUploading] = useState(false);
   const [pendingAttachments, setPendingAttachments] = useState([]);
 
+    // Broadcast total unread count to sidebar whenever conversation list changes
+    useEffect(() => {
+      const total = conversations.reduce((sum, c) => sum + (c.unread_count || 0), 0);
+      eventBus.emit('chat-unread-updated', { count: total });
+    }, [conversations]);
+
   // Fetch initial data
   useEffect(() => { 
     fetchConversations(); 
@@ -132,6 +139,8 @@ const Collaboration = () => {
     setConversations(prev => prev.map(c => 
       c.id === msg.conversation ? { ...c, last_message: msg, updated_at: new Date().toISOString() } : c
     ));
+    // Tell sidebar to refresh its count immediately
+    eventBus.emit('chat-new-message');
   }, []);
 
   const handleTaskUpdated = useCallback((msg) => {

@@ -19,7 +19,7 @@ export const useChatWebSocket = (conversationId, onMessage, onTyping, onTaskUpda
     const token = localStorage.getItem('access_token');
     if (!token) return;
 
-    const wsUrl = `${WS_BASE_URL}/ws/chat/${conversationId}/?token=${token}`;
+    const wsUrl = `${WS_BASE_URL}/chat/${conversationId}/?token=${token}`;
     const socket = new WebSocket(wsUrl);
 
     socket.onopen = () => {
