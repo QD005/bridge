@@ -1,5 +1,7 @@
 from django.db import models
 from django.utils import timezone
+from django.dispatch import receiver
+from django.db.models.signals import post_save
 
 class WorkflowExecution(models.Model):
     STATUS_CHOICES = [
@@ -43,6 +45,31 @@ class WorkflowExecution(models.Model):
 
     def __str__(self):
         return f"Request #{self.id} — {self.workflow.name} ({self.status})"
+
+    def save(self, *args, **kwargs):
+        # Track status change for notifications
+        if self.pk:
+            old = WorkflowExecution.objects.filter(pk=self.pk).first()
+            if old and old.status != self.status:
+                self._status_changed = True
+                self._old_status = old.status
+        super().save(*args, **kwargs)
+
+    def get_next_step(self):
+        """Get the next pending step in order."""
+        return self.steps.filter(
+            status__in=['PENDING', 'WAITING']
+        ).order_by('order').first()
+
+    def get_participants(self):
+        """Get all users involved in this execution."""
+        users = set()
+        if self.initiated_by:
+            users.add(self.initiated_by)
+        for step in self.steps.all():
+            if step.approved_by:
+                users.add(step.approved_by)
+        return list(users)
 
 
 class ExecutionStep(models.Model):
@@ -88,6 +115,27 @@ class ExecutionStep(models.Model):
 
     def __str__(self):
         return f"ExecStep {self.order} — {self.workflow_step.name or self.workflow_step.step_type} ({self.status})"
+
+    @property
+    def step_name(self):
+        return self.workflow_step.name or self.workflow_step.step_type
+
+    @property
+    def step_type(self):
+        return self.workflow_step.step_type
+
+    @property
+    def service(self):
+        return self.workflow_step.service
+
+    def save(self, *args, **kwargs):
+        # Track status change for notifications
+        if self.pk:
+            old = ExecutionStep.objects.filter(pk=self.pk).first()
+            if old and old.status != self.status:
+                self._status_changed = True
+                self._old_status = old.status
+        super().save(*args, **kwargs)
 
 
 class StepSubmission(models.Model):
