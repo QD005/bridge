@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Shield, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { Shield, Mail, Lock, Eye, EyeOff, Zap } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+
+const ADMIN_CREDENTIALS = {
+  email: 'quinn@gmail.com',
+  password: 'quinn'
+};
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -26,6 +31,21 @@ const Login = () => {
     }
   };
 
+  const handleQuickLogin = async () => {
+    setEmail(ADMIN_CREDENTIALS.email);
+    setPassword(ADMIN_CREDENTIALS.password);
+    setError('');
+    setLoading(true);
+    try {
+      await login(ADMIN_CREDENTIALS.email, ADMIN_CREDENTIALS.password);
+      navigate('/');
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Invalid credentials');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-[var(--bg-primary)] p-4">
       <div className="w-full max-w-sm lg:max-w-md">
@@ -40,6 +60,24 @@ const Login = () => {
           </div>
           <h1 className="text-xl lg:text-2xl font-bold text-[var(--text-primary)]">Bridge Uganda</h1>
           <p className="text-xs lg:text-sm text-[var(--text-muted)] mt-1">National Interoperability Platform</p>
+        </div>
+
+        {/* Quick Login Banner */}
+        <div className="mb-4 p-3 rounded-lg bg-accent/10 border border-accent/20">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-medium text-accent">Panel Testing Access</p>
+              <p className="text-[10px] text-[var(--text-muted)]">Pre-configured admin account</p>
+            </div>
+            <button
+              onClick={handleQuickLogin}
+              disabled={loading}
+              className="px-3 py-1.5 rounded-lg bg-accent text-white text-xs font-medium hover:bg-accent-hover transition-colors flex items-center gap-1.5 disabled:opacity-50"
+            >
+              <Zap className="w-3 h-3" />
+              Quick Login
+            </button>
+          </div>
         </div>
 
         {/* Form */}
