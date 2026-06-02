@@ -124,7 +124,7 @@ const Sidebar = ({ isOpen, onClose }) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
           const isChat = item.path === '/collaboration';
-          const showBadge = isChat && unreadMessages > 0 && !isActive;
+          const showBadge = isChat && unreadMessages > 0;
 
           return (
             <NavLink
